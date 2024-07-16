@@ -16,10 +16,12 @@ import {
   validateOptionalStrings,
   validateBooleans,
   validateObjects,
-  validateNoUnknownArgs
+  validateNoUnknownArgs,
+  validateOptionalNumbers
 } from './lib/InputValidators'
 
 import { DEFAULT_UPLOAD_ORIGIN, buildEndpointUrl } from './lib/EndpointUrl'
+import { promiseAllN } from './lib/Utils'
 const UPLOAD_PATH = '/sourcemap'
 
 interface UploadSingleOpts {
@@ -136,6 +138,7 @@ interface UploadMultipleOpts {
   requestOpts?: http.RequestOptions
   logger?: Logger
   idleTimeout?: number
+  concurrency?: number;
 }
 
 function validateMultipleOpts (opts: Record<string, unknown>, unknownArgs: Record<string, unknown>) {
@@ -143,6 +146,7 @@ function validateMultipleOpts (opts: Record<string, unknown>, unknownArgs: Recor
   validateOptionalStrings(opts, [ 'appVersion', 'codeBundleId' ])
   validateBooleans(opts, [ 'overwrite', 'detectAppVersion' ])
   validateObjects(opts, [ 'requestOpts', 'logger' ])
+  validateOptionalNumbers(opts, [ 'concurrency' ])
   validateNoUnknownArgs(unknownArgs)
 }
 
@@ -157,6 +161,7 @@ export async function uploadMultiple ({
   endpoint = DEFAULT_UPLOAD_ORIGIN,
   detectAppVersion = false,
   requestOpts = {},
+  concurrency = 1,
   logger = noopLogger,
   ...unknownArgs
 }: UploadMultipleOpts): Promise<void> {
@@ -170,6 +175,7 @@ export async function uploadMultiple ({
     endpoint,
     detectAppVersion,
     requestOpts,
+    concurrency,
     logger
   }, unknownArgs as Record<string, unknown>)
 
@@ -209,11 +215,7 @@ export async function uploadMultiple ({
     }
   }
 
-  let n = 0
-  for (const sourceMap of sourceMaps) {
-    n++
-    logger.info(`${n} of ${sourceMaps.length}`)
-
+  await promiseAllN(sourceMaps.map(async sourceMap => {
     const [ sourceMapContent, fullSourceMapPath ] = await readSourceMap(sourceMap, absoluteSearchPath, logger)
     const sourceMapJson = parseSourceMap(sourceMapContent, fullSourceMapPath, logger)
 
@@ -252,5 +254,5 @@ export async function uploadMultiple ({
       }
       throw e
     }
-  }
+  }), concurrency);
 }
