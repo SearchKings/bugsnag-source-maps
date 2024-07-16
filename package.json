@@ -1,5 +1,5 @@
 {
-  "name": "@bugsnag/source-maps",
+  "name": "@searchkings/source-maps",
   "version": "2.3.3",
   "description": "CLI and JS library for uploading source maps to Bugsnag",
   "main": "dist/index.js",
