@@ -17,6 +17,16 @@ export function validateOptionalStrings (opts: Record<string, unknown>, keys: st
   }
 }
 
+export function validateOptionalNumbers (opts: Record<string, unknown>, keys: string[]): void {
+  for (const optionalNumber of keys) {
+    if (typeof opts[optionalNumber] !== 'undefined') {
+      if (typeof opts[optionalNumber] !== 'number') {
+        throw new Error(`${optionalNumber} must be a number`)
+      }
+    }
+  }
+}
+
 export function validateBooleans (opts: Record<string, unknown>, keys: string[]): void {
   for (const bool of keys) {
     if (typeof opts[bool] !== 'boolean') {
