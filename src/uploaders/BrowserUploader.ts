@@ -189,7 +189,7 @@ export async function uploadMultiple ({
 
   logger.info(`Preparing upload of browser source maps for "${baseUrl}"`)
 
-  let url
+  let url: string;
   try {
     url = buildEndpointUrl(endpoint, UPLOAD_PATH)
   } catch (e) {

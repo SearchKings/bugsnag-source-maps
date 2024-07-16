@@ -175,7 +175,7 @@ export async function uploadMultiple ({
 
   logger.info(`Preparing upload of node source maps for "${directory}"`)
 
-  let url
+  let url: string;
   try {
     url = buildEndpointUrl(endpoint, UPLOAD_PATH)
   } catch (e) {
